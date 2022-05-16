@@ -2,8 +2,9 @@ const express = require("express");
 const graphqlHTTP = require("express-graphql").graphqlHTTP;
 const mongoose = require("mongoose");
 const cors = require("cors");
-
 require("dotenv").config();
+
+const schema = require("./schema/schema");
 
 const app = express();
 
@@ -21,6 +22,14 @@ const connectToMongo = async () => {
 };
 
 connectToMongo();
+
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema,
+    graphiql: true,
+  })
+);
 
 app.listen(4040, () => {
   console.info("GraphQL server running on port 4040");
