@@ -10,6 +10,7 @@ const {
   GraphQLString,
   GraphQLID,
   GraphQLList,
+  GraphQLNonNull,
 } = graphql;
 
 const PlantType = new GraphQLObjectType({
@@ -56,9 +57,73 @@ const RootQuery = new GraphQLObjectType({
         return Plant.findById(args.id);
       },
     },
+    user: {
+      type: UserType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return User.findById(args.id);
+      },
+    },
+    plants: {
+      type: new GraphQLList(PlantType),
+      resolve(parent, args) {
+        return Plant.find({});
+      },
+    },
+    users: {
+      type: new GraphQLList(UserType),
+      resolve(parent, args) {
+        return User.find({});
+      },
+    },
+  },
+});
+
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addUser: {
+      type: UserType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        userName: { type: new GraphQLNonNull(GraphQLString) },
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        let user = new User({
+          name: args.name,
+          userName: args.userName,
+          email: args.email,
+          password: args.password,
+        });
+        return User.save();
+      },
+    },
+
+    addPlant: {
+      type: PlantType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        scientificName: { type: new GraphQLNonNull(GraphQLString) },
+        family: { type: new GraphQLNonNull(GraphQLString) },
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        userId: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        let plant = new Plant({
+          name: args.name,
+          scientificName: args.scientificName,
+          family: args.family,
+          description: args.description,
+        });
+        return plant.save();
+      },
+    },
   },
 });
 
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation: Mutation,
 });
