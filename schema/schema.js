@@ -1,4 +1,5 @@
 const graphql = require("graphql");
+const argon2 = require("argon2");
 const _ = require("lodash");
 
 const Plant = require("../models/plant");
@@ -91,13 +92,17 @@ const Mutation = new GraphQLObjectType({
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, args) {
-        let user = new User({
-          name: args.name,
-          userName: args.userName,
-          email: args.email,
-          password: args.password,
+        // wait for argon2 to be ready
+        return argon2.hash(args.password).then((hashedPassword) => {
+          const user = new User({
+            name: args.name,
+            userName: args.userName,
+            email: args.email,
+            password: hashedPassword,
+          });
+
+          return user.save();
         });
-        return user.save();
       },
     },
 
