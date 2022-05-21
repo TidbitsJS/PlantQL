@@ -116,13 +116,21 @@ const Mutation = new GraphQLObjectType({
         userId: { type: new GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
-        let plant = new Plant({
-          name: args.name,
-          scientificName: args.scientificName,
-          family: args.family,
-          description: args.description,
+        // check if user exists
+        return User.findById(args.userId).then((user) => {
+          if (!user) {
+            throw new Error("User not found");
+          } else {
+            let plant = new Plant({
+              name: args.name,
+              scientificName: args.scientificName,
+              family: args.family,
+              description: args.description,
+            });
+
+            return plant.save();
+          }
         });
-        return plant.save();
       },
     },
   },
